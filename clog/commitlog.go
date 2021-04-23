@@ -204,6 +204,11 @@ func (l *Clog) activeSegment() (*segment, error) {
 	return l.segmentRead()[_len-1], nil
 }
 
+// Path returns the directory, in the filesystem, of the commitlog
+func (l *Clog) Path() string {
+	return l.path
+}
+
 // Append adds an item to the commitLog.
 // To append more items at once use AppendBulk
 func (l *Clog) Append(b []byte) error {

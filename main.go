@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"strings"
 	"sync"
 
@@ -14,7 +15,7 @@ func main() {
 	if e != nil {
 		panic(e)
 	}
-	// defer os.RemoveAll(l.path)
+	defer os.RemoveAll(l.Path())
 
 	// 1. Append
 	for i := 0; i < 80; i++ {
