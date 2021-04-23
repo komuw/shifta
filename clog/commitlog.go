@@ -35,7 +35,11 @@ const (
 	lFileSuffix = ".log"
 )
 
-var ownerReadableWritable fs.FileMode = 0o600
+// owner can read, write, & execute
+// group can only read
+// others have no permissions
+var ownerReadableWritable fs.FileMode = 0o740
+
 var (
 	errNoActiveSegment   = errors.New("commitLog has no active segment")
 	errLogNotInitialized = errors.New("commitLog has not been initialized. use New method")
