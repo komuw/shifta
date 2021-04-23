@@ -96,6 +96,7 @@ func (s *segment) Append(b []byte) error {
 	defer s.mu.Unlock()
 
 	// TODO: write in encoded form
+	// https://github.com/komuw/shifta/issues/1
 	n, err := s.f.Write(b)
 	if err != nil {
 		return errSegmentWrite(err)
