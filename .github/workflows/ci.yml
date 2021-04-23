@@ -67,6 +67,7 @@ jobs:
         run: |
           go test -timeout 1m -race -run=XXXX -bench=. ./...
           go test -timeout 1m -v -race ./...
+        if: matrix.platform != 'windows-latest'
 
       - name: test coverage
         run: |
