@@ -9,6 +9,7 @@ package clog
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"sort"
@@ -34,6 +35,7 @@ const (
 	lFileSuffix = ".log"
 )
 
+var ownerReadableWritable fs.FileMode = 0o600
 var (
 	errNoActiveSegment   = errors.New("commitLog has no active segment")
 	errLogNotInitialized = errors.New("commitLog has not been initialized. use New method")
@@ -114,7 +116,7 @@ func (l *Clog) String() string {
 }
 
 func (l *Clog) createPath() error {
-	err := os.MkdirAll(l.path, 0o755)
+	err := os.MkdirAll(l.path, ownerReadableWritable)
 	if err != nil {
 		return errMkDir(err)
 	}

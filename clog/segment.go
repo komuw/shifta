@@ -43,7 +43,7 @@ type segment struct {
 
 func newSegment(path string, baseOffset uint64, maxSegBytes uint64) (*segment, error) {
 	filePath := filepath.Join(path, fmt.Sprintf("%d.log", baseOffset))
-	f, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0o666)
+	f, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, ownerReadableWritable)
 	if err != nil {
 		return nil, errOpenFile(err)
 	}
