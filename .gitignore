@@ -1,0 +1,19 @@
+.vscode/*
+debug
+debug.test
+coverage.txt
+coverage.out
+coverage.html
+.DS_Store
+
+# go-pry debug stuff
+.main.gopry
+
+# goreleaser distribution folder.
+/dist/
+
+# debug stuff
+debug.test
+commitlog.test
+mem.prof
+cpu.prof
