@@ -16,8 +16,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	_ "net/http/pprof"
 )
 
 // TODO:
