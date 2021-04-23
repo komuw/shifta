@@ -1,8 +1,6 @@
 package main
 
 import (
-	"log"
-	"net/http"
 	"strings"
 	"sync"
 
@@ -10,10 +8,6 @@ import (
 )
 
 func main() {
-	go func() {
-		log.Println(http.ListenAndServe("localhost:6060", nil))
-	}()
-
 	wg := sync.WaitGroup{}
 
 	l, e := clog.New("/tmp/clog/orders", 100, 5, 7)
