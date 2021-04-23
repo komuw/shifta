@@ -24,7 +24,7 @@ func (m mockFileFail) Name() string                     { return m.fName }
 func (m mockFileFail) Read(p []byte) (n int, err error) { return 1, nil }
 func (m mockFileFail) Write(p []byte) (n int, err error) {
 	if m.shortWrite {
-		return int(n / 2), m.errWrite
+		return (n / 2), m.errWrite
 	}
 	return n, m.errWrite
 }
