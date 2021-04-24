@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/pbnjay/memory"
 )
 
 func createPathForTests(t *testing.T) (string, func()) {
@@ -731,59 +732,55 @@ func TestLogRead(t *testing.T) {
 		l, removePath := createClogForTests(t)
 		defer removePath()
 
-		msg := []byte(strings.Repeat("a", 1_000_000_000/4)) // each message is ~0.25gb in size
-		for i := 0; i < 120; i++ {
-			// in total, we'll store ~30GB(120*0.25) worth of data.
+		totalMemBytes := int(memory.TotalMemory())
+		targetMemBytes := totalMemBytes * 2
+		numSegs := 200
+		memPerSeg := targetMemBytes / numSegs
+
+		msg := []byte(strings.Repeat("a", int(memPerSeg)))
+		for i := 0; i <= numSegs; i++ {
 			errA := l.Append(msg)
 			if errA != nil {
 				t.Fatal("\n\t", errA)
 			}
 		}
 
-		// try and read the ~30GB worth of data.
-		// this is greater than the working RAM of most computers.
+		// try and read the 2*RAM worth of data.
+		// this is greater than the working RAM of the computer.
 		blob, _, errB := l.Read(0)
 		if errB != nil {
 			t.Fatal("\n\t", errB)
 		}
-		if len(blob) != maxToRead {
+		if len(blob) < maxToRead {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), maxToRead)
+		}
+		if len(blob) > maxToRead*2 {
 			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), maxToRead)
 		}
 	})
 
-	// t.Run("read from a commitlog where each segment is larger than the maxToRead const in l.Read", func(t *testing.T) {
-	// 	t.Parallel()
+	t.Run("read from a commitlog where each segment is larger than the maxToRead const in l.Read", func(t *testing.T) {
+		t.Parallel()
 
-	// 	l, removePath := createClogForTests(t)
-	// 	defer removePath()
+		l, removePath := createClogForTests(t)
+		defer removePath()
 
-	// 	msg := []byte(strings.Repeat("a", maxToRead*3))
-	// 	for i := 0; i < 20; i++ {
-	// 		errA := l.Append(msg)
-	// 		if errA != nil {
-	// 			t.Fatal("\n\t", errA)
-	// 		}
-	// 	}
+		msg := []byte(strings.Repeat("a", maxToRead*2))
+		for i := 0; i < 4; i++ {
+			errA := l.Append(msg)
+			if errA != nil {
+				t.Fatal("\n\t", errA)
+			}
+		}
 
-	// 	blob, _, errB := l.Read(0)
-	// 	if errB != nil {
-	// 		t.Fatal("\n\t", errB)
-	// 	}
-
-	// 	f, errC := os.OpenFile("/tmp/savedFile.txt", os.O_RDWR|os.O_CREATE, ownerReadableWritable)
-	// 	if errC != nil {
-	// 		t.Fatal("\n\t", errC)
-	// 	}
-	// 	for _, b := range blob {
-	// 		_, errD := f.Write(b)
-	// 		if errD != nil {
-	// 			t.Fatal("\n\t", errD)
-	// 		}
-	// 	}
-	// 	f.Close()
-
-	// 	t.Log("blob len: ", len(blob))
-	// })
+		blob, _, errB := l.Read(0)
+		if errB != nil {
+			t.Fatal("\n\t", errB)
+		}
+		if len(blob) != maxToRead*2 {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), maxToRead*3)
+		}
+	})
 }
 
 func TestCommitLogRaceDetection(t *testing.T) {

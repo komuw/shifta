@@ -299,7 +299,7 @@ func (l *Clog) Clean() error {
 	return nil
 }
 
-const maxToRead = 1 * 1000 * 1000 * 1000 // 1GB
+const maxToRead = ((1 * 1000 * 1000 * 1000) / 4) // 0.25GB
 
 // Read reads data from the commitlog starting at offset(exclusive)
 //
