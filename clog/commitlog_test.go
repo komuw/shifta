@@ -731,14 +731,13 @@ func TestLogRead(t *testing.T) {
 		l, removePath := createClogForTests(t)
 		defer removePath()
 
-		msg := []byte(strings.Repeat("a", 1_000_000_000)) // each message is ~1GB in size
-		for i := 0; i < 33; i++ {
-			// in total, we'll store ~30GB worth of data.
+		msg := []byte(strings.Repeat("a", 1_000_000_000/4)) // each message is ~0.25gb in size
+		for i := 0; i < 120; i++ {
+			// in total, we'll store ~30GB(120*0.25) worth of data.
 			errA := l.Append(msg)
 			if errA != nil {
 				t.Fatal("\n\t", errA)
 			}
-			// time.Sleep(6 * time.Second)
 		}
 
 		// try and read the ~30GB worth of data.

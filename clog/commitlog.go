@@ -307,6 +307,8 @@ func (l *Clog) Read(offset uint64) (dataRead [][]byte, lastReadOffset uint64, er
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
+	const maxToRead = 1 * 1000 * 1000 * 1000 // 1GB
+	var sizeReadSofar int
 	for _, seg := range l.segments {
 		if seg.baseOffset > offset {
 			// We exclude the offset from reads.
@@ -319,8 +321,12 @@ func (l *Clog) Read(offset uint64) (dataRead [][]byte, lastReadOffset uint64, er
 			}
 			dataRead = append(dataRead, b)
 			lastReadOffset = seg.baseOffset
+			sizeReadSofar = sizeReadSofar + len(b)
+
+			if sizeReadSofar >= maxToRead {
+				break
+			}
 		}
 	}
-
 	return dataRead, lastReadOffset, nil
 }
