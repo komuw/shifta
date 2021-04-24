@@ -306,8 +306,8 @@ const internalMaxToRead = (64 * 1000 * 1000) // 64Mb
 // If it encounters an error, it will still return all the data read so far,
 // its offset and an error.
 func (l *Clog) Read(offset uint64) (dataRead []byte, lastReadOffset uint64, err error) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
+	l.mu.RLock()
+	defer l.mu.RUnlock()
 
 	var sizeReadSofar int
 	for _, seg := range l.segments {
