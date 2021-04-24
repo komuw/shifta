@@ -724,6 +724,44 @@ func TestLogRead(t *testing.T) {
 			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", lo, 0)
 		}
 	})
+
+	t.Run("read from a commitlog with data larger than RAM", func(t *testing.T) {
+		t.Parallel()
+
+		l, removePath := createClogForTests(t)
+		defer removePath()
+
+		msg := []byte(strings.Repeat("a", 1_000_000_000)) // each message is ~1GB in size
+		for i := 0; i < 33; i++ {
+			// in total, we'll store ~30GB worth of data.
+			errA := l.Append(msg)
+			if errA != nil {
+				t.Fatal("\n\t", errA)
+			}
+			// time.Sleep(6 * time.Second)
+		}
+
+		// try and read the ~30GB worth of data.
+		// this is greater than the working RAM of most computers.
+		blob, _, errB := l.Read(0)
+		if errB != nil {
+			t.Fatal("\n\t", errB)
+		}
+
+		f, errC := os.OpenFile("/tmp/savedFile.txt", os.O_RDWR|os.O_CREATE, ownerReadableWritable)
+		if errC != nil {
+			t.Fatal("\n\t", errC)
+		}
+		for _, b := range blob {
+			_, errD := f.Write(b)
+			if errD != nil {
+				t.Fatal("\n\t", errD)
+			}
+		}
+		f.Close()
+
+		t.Log("blob len: ", len(blob))
+	})
 }
 
 func TestCommitLogRaceDetection(t *testing.T) {
