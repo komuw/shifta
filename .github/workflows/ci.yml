@@ -52,7 +52,7 @@ jobs:
     strategy:
       matrix:
         go-version: [1.16]
-        platform: [ubuntu-18.04, macos-latest, windows-latest]
+        platform: [ubuntu-18.04]
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Set up Go
@@ -67,7 +67,6 @@ jobs:
         run: |
           go test -timeout 1m -race -run=XXXX -bench=. ./...
           go test -timeout 1m -v -race ./...
-        if: matrix.platform != 'windows-latest'
 
       - name: test coverage
         run: |
@@ -82,14 +81,12 @@ jobs:
           go test -timeout 2m -v -race -cover -coverprofile=coverage.out ./... && bash <(curl -s https://codecov.io/bash)
           go tool cover -html=coverage.out -o coverage.html
           go tool cover -func=coverage.out
-        if: matrix.platform != 'windows-latest'
 
       # - name: check can run
       #   run: |
       #     pwd; ls -lsha
       #     go build --race -trimpath -o clog $HOME/work/clog/clog/cmd/clog
       #     ./clog
-      #   if: matrix.platform != 'windows-latest'
 
 
   run_analysis:
@@ -199,7 +196,7 @@ jobs:
     strategy:
       matrix:
         go-version: [1.16]
-        platform: [ubuntu-18.04, macos-latest, windows-latest]
+        platform: [ubuntu-18.04]
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Set up Go
@@ -218,4 +215,3 @@ jobs:
             printf "running acceptance number $i\n"
             go run --race .
           done
-        if: matrix.platform != 'windows-latest'
