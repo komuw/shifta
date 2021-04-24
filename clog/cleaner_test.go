@@ -287,7 +287,9 @@ func TestCleanByAge(t *testing.T) {
 	t.Run("total log Age is less than cleaner.maxLogAge", func(t *testing.T) {
 		t.Parallel()
 
-		maxLogAge := time.Duration(10_000)
+		// fix when https://github.com/dgryski/semgrep-go/issues/29
+		// gets fixed.
+		maxLogAge := time.Duration(10000)
 		cl, errI := newCleaner(1, maxLogAge)
 		if errI != nil {
 			t.Fatal("\n\t", errI)
