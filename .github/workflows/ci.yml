@@ -31,9 +31,9 @@ jobs:
           GITHUB_HEAD_REF: ${{ github.head_ref }}
           GITHUB_BASE_REF: ${{ github.base_ref	}}
         run: |
-          printf "GIT_BRANCH: $GIT_BRANCH"
-          printf "GITHUB_HEAD_REF: $GITHUB_HEAD_REF"
-          printf "GITHUB_BASE_REF: $GITHUB_BASE_REF"
+          printf "GIT_BRANCH: $GIT_BRANCH \n"
+          printf "GITHUB_HEAD_REF: $GITHUB_HEAD_REF \n"
+          printf "GITHUB_BASE_REF: $GITHUB_BASE_REF \n"
 
           if [[ "$GIT_BRANCH" == "refs/heads/main" ]]
           then
