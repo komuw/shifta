@@ -634,8 +634,8 @@ func TestLogRead(t *testing.T) {
 		if lastReadOffset != l.segments[0].baseOffset {
 			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", lastReadOffset, l.segments[0].baseOffset)
 		}
-		if string(blob[0]) != oneMsg {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", string(blob[0]), oneMsg)
+		if string(blob) != oneMsg {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", string(blob), oneMsg)
 		}
 	})
 
@@ -665,14 +665,14 @@ func TestLogRead(t *testing.T) {
 		if lastReadOffset != l.segments[22].baseOffset {
 			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", lastReadOffset, l.segments[22].baseOffset)
 		}
-		if len(blob) != 23 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), 23)
+		if len(blob) != 16100 {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), 16100)
 		}
 		if !cmp.Equal(blob[0], blob[22]) {
 			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", string(blob[0]), string(blob[22]))
 		}
-		if !cmp.Equal(blob[0], msg) {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", string(blob[0]), msg)
+		if !cmp.Equal(blob[0], msg[0]) {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", blob[0], msg[0])
 		}
 	})
 
@@ -703,14 +703,14 @@ func TestLogRead(t *testing.T) {
 		if lastReadOffset != l.segments[22].baseOffset {
 			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", lastReadOffset, l.segments[22].baseOffset)
 		}
-		if len(blob) != 9 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), 9)
+		if len(blob) != 6300 {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), 6300)
 		}
 		if !cmp.Equal(blob[0], blob[8]) {
 			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", string(blob[0]), string(blob[8]))
 		}
-		if !cmp.Equal(blob[0], msg) {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", string(blob[0]), msg)
+		if !cmp.Equal(blob[0], msg[0]) {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", blob[0], msg[0])
 		}
 
 		b, lo, errC := l.Read(lastReadOffset)
