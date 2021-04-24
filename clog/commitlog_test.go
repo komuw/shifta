@@ -712,6 +712,17 @@ func TestLogRead(t *testing.T) {
 		if !cmp.Equal(blob[0], msg) {
 			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", string(blob[0]), msg)
 		}
+
+		b, lo, errC := l.Read(lastReadOffset)
+		if errC != nil {
+			t.Fatal("\n\t", errC)
+		}
+		if len(b) != 0 {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(b), 0)
+		}
+		if lo != 0 {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", lo, 0)
+		}
 	})
 }
 

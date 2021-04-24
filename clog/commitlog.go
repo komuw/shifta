@@ -299,7 +299,7 @@ func (l *Clog) Clean() error {
 	return nil
 }
 
-// Read reads data from the commitlog starting at offset(excluding offset)
+// Read reads data from the commitlog starting at offset(exclusive)
 //
 // If it encounters an error, it will still return all the data read so far,
 // its offset and an error.
