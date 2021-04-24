@@ -310,7 +310,6 @@ func (l *Clog) Read(offset uint64) ([][]byte, uint64, error) {
 	var blob [][]byte
 	var lastReadOffset uint64
 	for _, seg := range l.segments {
-		// TODO: make sure that segments are read in order(smallest to largest baseOffset)
 		if seg.baseOffset >= offset {
 			b, err := seg.Read()
 			if err != nil {
