@@ -91,7 +91,7 @@ jobs:
 
   run_analysis:
     name: run_analysis
-    timeout-minutes: 2
+    timeout-minutes: 3
     strategy:
       matrix:
         go-version: [1.16]
@@ -210,7 +210,7 @@ jobs:
       - name: do acceptance
         run: |
           set -x
-          for i in {1..25}
+          for i in {1..13}
           do
             printf "running acceptance number $i\n"
             go run --race .
