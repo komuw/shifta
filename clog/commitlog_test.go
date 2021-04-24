@@ -761,6 +761,40 @@ func TestLogRead(t *testing.T) {
 
 		t.Log("blob len: ", len(blob))
 	})
+
+	// t.Run("read from a commitlog where each segment is larger than the maxToRead const in l.Read", func(t *testing.T) {
+	// 	t.Parallel()
+
+	// 	l, removePath := createClogForTests(t)
+	// 	defer removePath()
+
+	// 	msg := []byte(strings.Repeat("a", maxToRead*3))
+	// 	for i := 0; i < 20; i++ {
+	// 		errA := l.Append(msg)
+	// 		if errA != nil {
+	// 			t.Fatal("\n\t", errA)
+	// 		}
+	// 	}
+
+	// 	blob, _, errB := l.Read(0)
+	// 	if errB != nil {
+	// 		t.Fatal("\n\t", errB)
+	// 	}
+
+	// 	f, errC := os.OpenFile("/tmp/savedFile.txt", os.O_RDWR|os.O_CREATE, ownerReadableWritable)
+	// 	if errC != nil {
+	// 		t.Fatal("\n\t", errC)
+	// 	}
+	// 	for _, b := range blob {
+	// 		_, errD := f.Write(b)
+	// 		if errD != nil {
+	// 			t.Fatal("\n\t", errD)
+	// 		}
+	// 	}
+	// 	f.Close()
+
+	// 	t.Log("blob len: ", len(blob))
+	// })
 }
 
 func TestCommitLogRaceDetection(t *testing.T) {

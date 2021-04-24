@@ -299,6 +299,8 @@ func (l *Clog) Clean() error {
 	return nil
 }
 
+const maxToRead = 1 * 1000 * 1000 * 1000 // 1GB
+
 // Read reads data from the commitlog starting at offset(exclusive)
 //
 // If it encounters an error, it will still return all the data read so far,
@@ -307,7 +309,6 @@ func (l *Clog) Read(offset uint64) (dataRead [][]byte, lastReadOffset uint64, er
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	const maxToRead = 1 * 1000 * 1000 * 1000 // 1GB
 	var sizeReadSofar int
 	for _, seg := range l.segments {
 		if seg.baseOffset > offset {
