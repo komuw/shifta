@@ -314,10 +314,10 @@ func (l *Clog) Read(offset uint64) (dataRead []byte, lastReadOffset uint64, err 
 		if seg.baseOffset > offset {
 			// We exclude the offset from reads.
 			// This allows people to use lastReadOffset in subsequent calls to l.Read
-			b, err := seg.Read()
-			if err != nil {
+			b, errR := seg.Read()
+			if errR != nil {
 				// TODO: should we return based on one error?
-				return dataRead, lastReadOffset, err
+				return dataRead, lastReadOffset, errR
 				// TODO: test that if error occurs, we still return whatever has been read so far.
 			}
 			dataRead = append(dataRead, b...)
