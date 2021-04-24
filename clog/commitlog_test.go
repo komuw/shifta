@@ -735,7 +735,7 @@ func TestLogRead(t *testing.T) {
 		numSegs := 8
 		memPerSeg := targetMemBytes / numSegs
 
-		msg := []byte(strings.Repeat("a", int(memPerSeg)))
+		msg := []byte(strings.Repeat("a", memPerSeg))
 		for i := 0; i <= numSegs; i++ {
 			errA := l.Append(msg)
 			if errA != nil {
