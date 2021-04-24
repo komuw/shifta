@@ -299,28 +299,28 @@ func (l *Clog) Clean() error {
 	return nil
 }
 
-// Read reads data from the commitlog starting at offset
+// Read reads data from the commitlog starting at offset(excluding offset)
 //
 // If it encounters an error, it will still return all the data read so far,
 // its offset and an error.
-func (l *Clog) Read(offset uint64) ([][]byte, uint64, error) {
+func (l *Clog) Read(offset uint64) (dataRead [][]byte, lastReadOffset uint64, err error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	var blob [][]byte
-	var lastReadOffset uint64
 	for _, seg := range l.segments {
-		if seg.baseOffset >= offset {
+		if seg.baseOffset > offset {
+			// We exclude the offset from reads.
+			// This allows people to use lastReadOffset in subsequent calls to l.Read
 			b, err := seg.Read()
 			if err != nil {
 				// TODO: should we return based on one error?
-				return blob, lastReadOffset, err
+				return dataRead, lastReadOffset, err
 				// TODO: test that if error occurs, we still return whatever has been read so far.
 			}
-			blob = append(blob, b)
+			dataRead = append(dataRead, b)
 			lastReadOffset = seg.baseOffset
 		}
 	}
 
-	return blob, lastReadOffset, nil
+	return dataRead, lastReadOffset, nil
 }
