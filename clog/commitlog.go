@@ -314,6 +314,10 @@ func (l *Clog) Read(offset uint64, maxToRead uint64) (dataRead []byte, lastReadO
 	var max int = int(maxToRead)
 	if max <= 0 {
 		max = internalMaxToRead
+	} else if max > (internalMaxToRead * 10) {
+		// prevent a case where a malicious actor sends
+		// a maxToRead that is >>> computer RAM leading to OOM
+		max = internalMaxToRead * 10
 	}
 
 	var sizeReadSofar int
