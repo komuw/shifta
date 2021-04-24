@@ -299,7 +299,7 @@ func (l *Clog) Clean() error {
 	return nil
 }
 
-const maxToRead = (64 * 1000 * 1000) // 64Mb
+const internalMaxToRead = (64 * 1000 * 1000) // 64Mb
 
 // Read reads data from the commitlog starting at offset(exclusive)
 //
@@ -324,7 +324,7 @@ func (l *Clog) Read(offset uint64) (dataRead []byte, lastReadOffset uint64, err 
 			lastReadOffset = seg.baseOffset
 			sizeReadSofar = sizeReadSofar + len(b)
 
-			if sizeReadSofar >= maxToRead {
+			if sizeReadSofar >= internalMaxToRead {
 				break
 			}
 		}

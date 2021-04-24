@@ -731,7 +731,7 @@ func TestLogRead(t *testing.T) {
 		l, removePath := createClogForTests(t)
 		defer removePath()
 
-		targetMemBytes := maxToRead * 4
+		targetMemBytes := internalMaxToRead * 4
 		numSegs := 8
 		memPerSeg := targetMemBytes / numSegs
 
@@ -748,11 +748,11 @@ func TestLogRead(t *testing.T) {
 		if errB != nil {
 			t.Fatal("\n\t", errB)
 		}
-		if len(blob) < maxToRead {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), maxToRead)
+		if len(blob) < internalMaxToRead {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), internalMaxToRead)
 		}
-		if len(blob) > maxToRead*2 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), maxToRead)
+		if len(blob) > internalMaxToRead*2 {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), internalMaxToRead)
 		}
 	})
 
@@ -762,7 +762,7 @@ func TestLogRead(t *testing.T) {
 		l, removePath := createClogForTests(t)
 		defer removePath()
 
-		msg := []byte(strings.Repeat("a", maxToRead*2))
+		msg := []byte(strings.Repeat("a", internalMaxToRead*2))
 		for i := 0; i < 4; i++ {
 			errA := l.Append(msg)
 			if errA != nil {
@@ -774,8 +774,8 @@ func TestLogRead(t *testing.T) {
 		if errB != nil {
 			t.Fatal("\n\t", errB)
 		}
-		if len(blob) != maxToRead*2 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), maxToRead*3)
+		if len(blob) != internalMaxToRead*2 {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), internalMaxToRead*3)
 		}
 	})
 }
