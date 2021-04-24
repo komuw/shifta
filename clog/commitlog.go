@@ -305,7 +305,7 @@ const maxToRead = 1 * 1000 * 1000 * 1000 // 1GB
 //
 // If it encounters an error, it will still return all the data read so far,
 // its offset and an error.
-func (l *Clog) Read(offset uint64) (dataRead [][]byte, lastReadOffset uint64, err error) {
+func (l *Clog) Read(offset uint64) (dataRead []byte, lastReadOffset uint64, err error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -320,7 +320,7 @@ func (l *Clog) Read(offset uint64) (dataRead [][]byte, lastReadOffset uint64, er
 				return dataRead, lastReadOffset, err
 				// TODO: test that if error occurs, we still return whatever has been read so far.
 			}
-			dataRead = append(dataRead, b)
+			dataRead = append(dataRead, b...)
 			lastReadOffset = seg.baseOffset
 			sizeReadSofar = sizeReadSofar + len(b)
 
@@ -329,5 +329,10 @@ func (l *Clog) Read(offset uint64) (dataRead [][]byte, lastReadOffset uint64, er
 			}
 		}
 	}
+
+	// clog reads the whole data from a segment, even if the individual segment
+	// has data greater than maxToRead.
+	// Thus, the returned lastReadOffset is safe to be used in subsequent l.Read calls
+	// since the segment it belongs to wont be read again.
 	return dataRead, lastReadOffset, nil
 }

@@ -751,11 +751,9 @@ func TestLogRead(t *testing.T) {
 		if errC != nil {
 			t.Fatal("\n\t", errC)
 		}
-		for _, b := range blob {
-			_, errD := f.Write(b)
-			if errD != nil {
-				t.Fatal("\n\t", errD)
-			}
+		_, errD := f.Write(blob)
+		if errD != nil {
+			t.Fatal("\n\t", errD)
 		}
 		f.Close()
 
