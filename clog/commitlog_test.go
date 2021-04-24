@@ -746,18 +746,9 @@ func TestLogRead(t *testing.T) {
 		if errB != nil {
 			t.Fatal("\n\t", errB)
 		}
-
-		f, errC := os.OpenFile("/tmp/savedFile.txt", os.O_RDWR|os.O_CREATE, ownerReadableWritable)
-		if errC != nil {
-			t.Fatal("\n\t", errC)
+		if len(blob) != maxToRead {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), maxToRead)
 		}
-		_, errD := f.Write(blob)
-		if errD != nil {
-			t.Fatal("\n\t", errD)
-		}
-		f.Close()
-
-		t.Log("blob len: ", len(blob))
 	})
 
 	// t.Run("read from a commitlog where each segment is larger than the maxToRead const in l.Read", func(t *testing.T) {
