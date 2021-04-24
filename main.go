@@ -38,7 +38,7 @@ func main() {
 		go func() {
 			defer wg.Done()
 			for j := 0; j < 6; j++ {
-				_, _, errB := l.Read(0)
+				_, _, errB := l.Read(0, 0)
 				if errB != nil {
 					panic(errB)
 				}
@@ -91,7 +91,7 @@ func main() {
 		go func() {
 			defer wg.Done()
 			for j := 0; j < 6; j++ {
-				_, _, errF := l.Read(3)
+				_, _, errF := l.Read(3, 0)
 				if errF != nil {
 					panic(errF)
 				}

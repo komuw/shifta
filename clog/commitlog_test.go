@@ -624,7 +624,7 @@ func TestLogRead(t *testing.T) {
 			t.Fatal("\n\t", errA)
 		}
 
-		blob, lastReadOffset, errB := l.Read(0)
+		blob, lastReadOffset, errB := l.Read(0, 0)
 		if errB != nil {
 			t.Fatal("\n\t", errB)
 		}
@@ -658,7 +658,7 @@ func TestLogRead(t *testing.T) {
 			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(l.segments), 23)
 		}
 
-		blob, lastReadOffset, errB := l.Read(0)
+		blob, lastReadOffset, errB := l.Read(0, 0)
 		if errB != nil {
 			t.Fatal("\n\t", errB)
 		}
@@ -696,7 +696,7 @@ func TestLogRead(t *testing.T) {
 		}
 
 		offset := l.segments[13].baseOffset + 3 // start from a number greater than the 13th segment's offset.
-		blob, lastReadOffset, errB := l.Read(offset)
+		blob, lastReadOffset, errB := l.Read(offset, 0)
 		if errB != nil {
 			t.Fatal("\n\t", errB)
 		}
@@ -713,7 +713,7 @@ func TestLogRead(t *testing.T) {
 			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", blob[0], msg[0])
 		}
 
-		b, lo, errC := l.Read(lastReadOffset)
+		b, lo, errC := l.Read(lastReadOffset, 0)
 		if errC != nil {
 			t.Fatal("\n\t", errC)
 		}
@@ -744,7 +744,7 @@ func TestLogRead(t *testing.T) {
 		}
 
 		// try and read the 4*maxToRead worth of data.
-		blob, _, errB := l.Read(0)
+		blob, _, errB := l.Read(0, 0)
 		if errB != nil {
 			t.Fatal("\n\t", errB)
 		}
@@ -770,7 +770,7 @@ func TestLogRead(t *testing.T) {
 			}
 		}
 
-		blob, _, errB := l.Read(0)
+		blob, _, errB := l.Read(0, 0)
 		if errB != nil {
 			t.Fatal("\n\t", errB)
 		}
@@ -815,7 +815,7 @@ func TestCommitLogRaceDetection(t *testing.T) {
 			go func() {
 				defer wg.Done()
 				for j := 0; j < 6; j++ {
-					_, _, errB := l.Read(0)
+					_, _, errB := l.Read(0, 0)
 					if errB != nil {
 						panic(errB)
 					}
@@ -868,7 +868,7 @@ func TestCommitLogRaceDetection(t *testing.T) {
 			go func() {
 				defer wg.Done()
 				for j := 0; j < 6; j++ {
-					_, _, errF := l.Read(3)
+					_, _, errF := l.Read(3, 0)
 					if errF != nil {
 						panic(errF)
 					}

@@ -204,7 +204,7 @@ func (l *Clog) activeSegment() (*segment, error) {
 	return l.segmentRead()[_len-1], nil
 }
 
-// Path returns the directory, in the filesystem, of the commitlog
+// Path returns the directory, in the filesystem, of the commitlog.
 func (l *Clog) Path() string {
 	return l.path
 }
@@ -301,13 +301,20 @@ func (l *Clog) Clean() error {
 
 const internalMaxToRead = (64 * 1000 * 1000) // 64Mb
 
-// Read reads data from the commitlog starting at offset(exclusive)
+// Read reads upto maxToRead bytes from the commitlog starting at offset(exclusive).
+// maxToRead is a hint, this method can read more or less than that.
+// If maxToRead == 0 then a default value will be chosen.
 //
 // If it encounters an error, it will still return all the data read so far,
 // its offset and an error.
-func (l *Clog) Read(offset uint64) (dataRead []byte, lastReadOffset uint64, err error) {
+func (l *Clog) Read(offset uint64, maxToRead uint64) (dataRead []byte, lastReadOffset uint64, err error) {
 	l.mu.RLock()
 	defer l.mu.RUnlock()
+
+	var max int = int(maxToRead)
+	if max <= 0 {
+		max = internalMaxToRead
+	}
 
 	var sizeReadSofar int
 	for _, seg := range l.segments {
@@ -324,7 +331,7 @@ func (l *Clog) Read(offset uint64) (dataRead []byte, lastReadOffset uint64, err 
 			lastReadOffset = seg.baseOffset
 			sizeReadSofar = sizeReadSofar + len(b)
 
-			if sizeReadSofar >= internalMaxToRead {
+			if sizeReadSofar >= max {
 				break
 			}
 		}
