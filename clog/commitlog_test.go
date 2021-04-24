@@ -801,9 +801,6 @@ func TestLogRead(t *testing.T) {
 		if len(blob) <= internalMaxToRead {
 			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), maxToRead)
 		}
-		if len(blob) != internalMaxToRead*10 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), internalMaxToRead*10)
-		}
 	})
 }
 
