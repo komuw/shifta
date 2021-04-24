@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/pbnjay/memory"
 )
 
 func createPathForTests(t *testing.T) (string, func()) {
@@ -726,15 +725,14 @@ func TestLogRead(t *testing.T) {
 		}
 	})
 
-	t.Run("read from a commitlog with data larger than RAM", func(t *testing.T) {
+	t.Run("read from a commitlog with data larger than maxToRead", func(t *testing.T) {
 		t.Parallel()
 
 		l, removePath := createClogForTests(t)
 		defer removePath()
 
-		totalMemBytes := int(memory.TotalMemory())
-		targetMemBytes := totalMemBytes * 2
-		numSegs := 200
+		targetMemBytes := maxToRead * 4
+		numSegs := 8
 		memPerSeg := targetMemBytes / numSegs
 
 		msg := []byte(strings.Repeat("a", int(memPerSeg)))
@@ -745,8 +743,7 @@ func TestLogRead(t *testing.T) {
 			}
 		}
 
-		// try and read the 2*RAM worth of data.
-		// this is greater than the working RAM of the computer.
+		// try and read the 4*maxToRead worth of data.
 		blob, _, errB := l.Read(0)
 		if errB != nil {
 			t.Fatal("\n\t", errB)
