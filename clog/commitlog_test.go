@@ -778,6 +778,33 @@ func TestLogRead(t *testing.T) {
 			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), internalMaxToRead*3)
 		}
 	})
+
+	t.Run("can use a custom maxToRead", func(t *testing.T) {
+		t.Parallel()
+
+		l, removePath := createClogForTests(t)
+		defer removePath()
+
+		maxToRead := internalMaxToRead * 12
+		msg := []byte(strings.Repeat("a", maxToRead*2))
+		for i := 0; i < 4; i++ {
+			errA := l.Append(msg)
+			if errA != nil {
+				t.Fatal("\n\t", errA)
+			}
+		}
+
+		blob, _, errB := l.Read(0, uint64(maxToRead))
+		if errB != nil {
+			t.Fatal("\n\t", errB)
+		}
+		if len(blob) <= internalMaxToRead {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), maxToRead)
+		}
+		if len(blob) != internalMaxToRead*10 {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), internalMaxToRead*10)
+		}
+	})
 }
 
 func TestCommitLogRaceDetection(t *testing.T) {
