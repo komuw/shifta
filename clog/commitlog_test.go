@@ -785,7 +785,7 @@ func TestLogRead(t *testing.T) {
 		l, removePath := createClogForTests(t)
 		defer removePath()
 
-		maxToRead := internalMaxToRead * 4
+		maxToRead := internalMaxToRead * 3
 		msg := []byte(strings.Repeat("a", maxToRead*2))
 		for i := 0; i < 4; i++ {
 			errA := l.Append(msg)
