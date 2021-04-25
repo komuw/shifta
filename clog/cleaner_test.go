@@ -69,12 +69,11 @@ func TestCleanByBytes(t *testing.T) {
 
 	t.Run("total log size is less than cleaner.maxLogBytes", func(t *testing.T) {
 		t.Parallel()
+		c := qt.New(t)
 
 		maxLogBytes := uint64(10)
 		cl, errI := newCleaner(maxLogBytes, 1)
-		if errI != nil {
-			t.Fatal("\n\t", errI)
-		}
+		c.Assert(errI, qt.IsNil)
 
 		segs := []*segment{}
 		totalSegments := 5
@@ -85,32 +84,23 @@ func TestCleanByBytes(t *testing.T) {
 
 			msg := []byte("a")
 			err := s.Append(msg)
-			if err != nil {
-				t.Fatal("\n\t", err)
-			}
+			c.Assert(err, qt.IsNil)
 		}
-		if len(segs) != totalSegments {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(segs), totalSegments)
-		}
+		c.Assert(segs, qt.HasLen, totalSegments)
 
 		cleanedSegs, errB := cl.cleanByBytes(segs)
-		if errB != nil {
-			t.Fatal("\n\t", errB)
-		}
+		c.Assert(errB, qt.IsNil)
 		// no cleaning should occur
-		if len(cleanedSegs) != totalSegments {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(cleanedSegs), totalSegments)
-		}
+		c.Assert(cleanedSegs, qt.HasLen, totalSegments)
 	})
 
 	t.Run("total log size is greater than cleaner.maxLogBytes", func(t *testing.T) {
 		t.Parallel()
+		c := qt.New(t)
 
 		maxLogBytes := uint64(10)
 		cl, errI := newCleaner(maxLogBytes, 1)
-		if errI != nil {
-			t.Fatal("\n\t", errI)
-		}
+		c.Assert(errI, qt.IsNil)
 
 		segs := []*segment{}
 		totalSegments := 20
@@ -121,22 +111,14 @@ func TestCleanByBytes(t *testing.T) {
 
 			msg := []byte("a")
 			err := s.Append(msg)
-			if err != nil {
-				t.Fatal("\n\t", err)
-			}
+			c.Assert(err, qt.IsNil)
 		}
-		if len(segs) != totalSegments {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(segs), totalSegments)
-		}
+		c.Assert(segs, qt.HasLen, totalSegments)
 
 		cleanedSegs, errB := cl.cleanByBytes(segs)
-		if errB != nil {
-			t.Fatal("\n\t", errB)
-		}
+		c.Assert(errB, qt.IsNil)
 		// cleaning SHOULD occur
-		if len(cleanedSegs) != totalSegments/2 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(cleanedSegs), totalSegments/2)
-		}
+		c.Assert(cleanedSegs, qt.HasLen, totalSegments/2)
 	})
 
 	t.Run("latest/active segment should be preserved", func(t *testing.T) {
