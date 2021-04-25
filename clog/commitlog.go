@@ -80,8 +80,8 @@ type Clog struct {
 //
 // The commitlog will be created in the filesystem at path.
 // Each segment will hold upto maxSegBytes of content, the value of maxSegBytes should be significantly smaller than RAM.
-// Once a segment gets larger than maxLogBytes, it gets deleted from the filesystem.
-// Likewise, once a segment gets older than maxLogAge, it gets deleted from the filesystem.
+// Once a commitlog gets larger than maxLogBytes, some segments gets deleted from the filesystem.
+// Likewise, once a commitlog gets older than maxLogAge, some segments gets deleted from the filesystem.
 // When creating a commitlog, you should choose values of maxSegBytes, maxLogBytes & maxLogAge
 // that are appropriate for your usecase.
 // For comparison purposes, the Kafka default values for maxLogBytes & maxLogAge is 1GB and 7days respectively.
@@ -91,6 +91,13 @@ type Clog struct {
 //   errA := l.Append([]byte("order # 1"))
 //
 func New(path string, maxSegBytes uint64, maxLogBytes uint64, maxLogAge time.Duration) (*Clog, error) {
+	// maxSegBytes is a property of segment.
+	//   It is size in bytes each segment can be, before been considered full & a new one created in its place.
+	// maxLogBytes is a property of clog.
+	//   It is size in bytes the log can allowed to be; once reached, some segments are deleted.
+	// maxLogAge is a property of clog.
+	//   It is age in seconds a log can be; once reached, some older segments are deleted.
+	//
 	c, err := newCleaner(maxLogBytes, maxLogAge)
 	if err != nil {
 		return nil, err
