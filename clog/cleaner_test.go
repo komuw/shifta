@@ -197,12 +197,11 @@ func TestCleanByAge(t *testing.T) {
 
 	t.Run("total log Age is equal to cleaner.maxLogAge", func(t *testing.T) {
 		t.Parallel()
+		c := qt.New(t)
 
 		maxLogAge := time.Duration(100)
 		cl, errI := newCleaner(1, maxLogAge)
-		if errI != nil {
-			t.Fatal("\n\t", errI)
-		}
+		c.Assert(errI, qt.IsNil)
 
 		segs := []*segment{}
 		totalSegments := 10
@@ -214,18 +213,12 @@ func TestCleanByAge(t *testing.T) {
 			s.age = 10
 			segs = append(segs, s)
 		}
-		if len(segs) != totalSegments {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(segs), totalSegments)
-		}
+		c.Assert(segs, qt.HasLen, totalSegments)
 
 		cleanedSegs, errB := cl.cleanByAge(segs)
-		if errB != nil {
-			t.Fatal("\n\t", errB)
-		}
+		c.Assert(errB, qt.IsNil)
 		// no cleaning should occur if Age of the log == maxLogAge
-		if len(cleanedSegs) != totalSegments {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(cleanedSegs), totalSegments)
-		}
+		c.Assert(cleanedSegs, qt.HasLen, totalSegments)
 	})
 
 	t.Run("total log Age is less than cleaner.maxLogAge", func(t *testing.T) {
