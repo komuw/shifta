@@ -79,7 +79,7 @@ type Clog struct {
 // New creates a commitLog.
 //
 // The commitlog will be created in the filesystem at path.
-// Each segment will hold upto maxSegBytes of content.
+// Each segment will hold upto maxSegBytes of content, the value of maxSegBytes should be significantly smaller than RAM.
 // Once a segment gets larger than maxLogBytes, it gets deleted from the filesystem.
 // Likewise, once a segment gets older than maxLogAge, it gets deleted from the filesystem.
 // When creating a commitlog, you should choose values of maxSegBytes, maxLogBytes & maxLogAge
