@@ -4,6 +4,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	qt "github.com/frankban/quicktest"
 )
 
 func TestCleaner(t *testing.T) {
@@ -11,28 +13,24 @@ func TestCleaner(t *testing.T) {
 
 	t.Run("less bytes errors", func(t *testing.T) {
 		t.Parallel()
+		c := qt.New(t)
+
 		_, errA := newCleaner(0, 1)
-		if errA == nil {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", errA, "nonNilError")
-		}
+		c.Assert(errA, qt.ErrorMatches, errBadCleaner.Error())
 
 		_, errB := newCleaner(uint64(0), 1)
-		if errB == nil {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", errB, "nonNilError")
-		}
+		c.Assert(errB, qt.ErrorMatches, errBadCleaner.Error())
 	})
 
 	t.Run("less Age errors", func(t *testing.T) {
 		t.Parallel()
+		c := qt.New(t)
+
 		_, errA := newCleaner(1, 0)
-		if errA == nil {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", errA, "nonNilError")
-		}
+		c.Assert(errA, qt.ErrorMatches, errBadCleaner.Error())
 
 		_, errB := newCleaner(1, -78)
-		if errB == nil {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", errB, "nonNilError")
-		}
+		c.Assert(errB, qt.ErrorMatches, errBadCleaner.Error())
 	})
 }
 
@@ -41,12 +39,11 @@ func TestCleanByBytes(t *testing.T) {
 
 	t.Run("total log size is equal to cleaner.maxLogBytes", func(t *testing.T) {
 		t.Parallel()
+		c := qt.New(t)
 
 		maxLogBytes := uint64(10)
 		cl, errI := newCleaner(maxLogBytes, 1)
-		if errI != nil {
-			t.Fatal("\n\t", errI)
-		}
+		c.Assert(errI, qt.IsNil)
 
 		segs := []*segment{}
 		totalSegments := 10
@@ -59,22 +56,15 @@ func TestCleanByBytes(t *testing.T) {
 			// so size of all segments == maxLogBytes
 			msg := []byte("a")
 			err := s.Append(msg)
-			if err != nil {
-				t.Fatal("\n\t", err)
-			}
+			c.Assert(err, qt.IsNil)
 		}
-		if len(segs) != totalSegments {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(segs), totalSegments)
-		}
+		c.Assert(segs, qt.HasLen, totalSegments)
 
 		cleanedSegs, errB := cl.cleanByBytes(segs)
-		if errB != nil {
-			t.Fatal("\n\t", errB)
-		}
+		c.Assert(errB, qt.IsNil)
+
 		// no cleaning should occur if size of the log == maxLogBytes
-		if len(cleanedSegs) != totalSegments {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(cleanedSegs), totalSegments)
-		}
+		c.Assert(cleanedSegs, qt.HasLen, totalSegments)
 	})
 
 	t.Run("total log size is less than cleaner.maxLogBytes", func(t *testing.T) {
