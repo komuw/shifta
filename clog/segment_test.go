@@ -58,30 +58,20 @@ func TestNewSegment(t *testing.T) {
 
 	t.Run("with zero baseOffset", func(t *testing.T) {
 		t.Parallel()
+		c := qt.New(t)
 
 		path, err := ioutil.TempDir("/tmp", "clog")
-		if err != nil {
-			t.Fatal("\n\t", err)
-		}
+		c.Assert(err, qt.IsNil)
 		defer os.RemoveAll(path)
 
 		bo := uint64(0)
 		s, errSeg := newSegment(path, bo, 100)
-		if errSeg != nil {
-			t.Fatal("\n\t", errSeg)
-		}
-		if s.baseOffset != bo {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", s.baseOffset, bo)
-		}
-		if s.currentSegBytes != 0 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", s.currentSegBytes, 0)
-		}
-		if s.maxSegBytes != 100 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", s.maxSegBytes, 100)
-		}
-		if s.age <= 0 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", s.age, ">0")
-		}
+		c.Assert(errSeg, qt.IsNil)
+
+		c.Assert(s.baseOffset, qt.Equals, bo)
+		c.Assert(s.currentSegBytes, qt.Equals, uint64(0))
+		c.Assert(s.maxSegBytes, qt.Equals, uint64(100))
+		c.Assert(s.age > 0, qt.IsTrue)
 	})
 
 	t.Run("with baseOffset far in the future", func(t *testing.T) {
