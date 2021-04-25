@@ -301,23 +301,10 @@ func TestCleanByAge(t *testing.T) {
 		// cleaning should occur
 		c.Assert(cleanedSegs, qt.HasLen, 4)
 
-		if cleanedSegs[0].baseOffset != 20 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", cleanedSegs[0].baseOffset, 20)
-		}
-		if cleanedSegs[1].baseOffset != 21 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", cleanedSegs[1].baseOffset, 21)
-		}
-		if cleanedSegs[2].baseOffset != 22 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", cleanedSegs[2].baseOffset, 22)
-		}
-		if cleanedSegs[3].baseOffset != 23 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", cleanedSegs[3].baseOffset, 23)
-		}
-
 		c.Assert(cleanedSegs[0].baseOffset, qt.Equals, uint64(20))
 		c.Assert(cleanedSegs[1].baseOffset, qt.Equals, uint64(21))
 		c.Assert(cleanedSegs[2].baseOffset, qt.Equals, uint64(22))
 		c.Assert(cleanedSegs[3].baseOffset, qt.Equals, uint64(23))
-
 	})
+
 }
