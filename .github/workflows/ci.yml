@@ -49,7 +49,7 @@ jobs:
           then
               printf "\n $GIT_BRANCH branch, ignoring check for relese notes \n"
           else
-              ChangedFiles=`git diff --name-only $GITHUB_BASE_REF`
+              ChangedFiles=`git diff --name-only remotes/origin/main`
               echo $ChangedFiles
               case "$ChangedFiles" in
                 *CHANGELOG.*)
