@@ -47,21 +47,13 @@ func TestNewSegment(t *testing.T) {
 
 		baseOffset := tNow()
 		s, err := newSegment(path, baseOffset, 100)
-		if err != nil {
-			t.Fatal("\n\t", err)
-		}
-		if s.baseOffset != baseOffset {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", s.baseOffset, baseOffset)
-		}
-		if s.currentSegBytes != 0 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", s.currentSegBytes, 0)
-		}
-		if s.maxSegBytes != 100 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", s.maxSegBytes, 100)
-		}
-		if s.closed != false {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", s.closed, false)
-		}
+		c.Assert(err, qt.IsNil)
+
+		c.Assert(s.baseOffset, qt.Equals, baseOffset)
+		c.Assert(s.currentSegBytes, qt.Equals, uint64(0))
+		c.Assert(s.maxSegBytes, qt.Equals, uint64(100))
+		c.Assert(s.closed, qt.Equals, false)
+
 		if s.age <= 0 {
 			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", s.age, ">0")
 		}
