@@ -306,5 +306,4 @@ func TestCleanByAge(t *testing.T) {
 		c.Assert(cleanedSegs[2].baseOffset, qt.Equals, uint64(22))
 		c.Assert(cleanedSegs[3].baseOffset, qt.Equals, uint64(23))
 	})
-
 }
