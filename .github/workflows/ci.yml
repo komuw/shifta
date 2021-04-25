@@ -20,15 +20,28 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
 
+      - name: checkout main branch too. # so that it is also available for diff operations
+        uses: actions/checkout@v2
+        with:
+          ref: main
+
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
 
+      # https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions
       - name: check if changes have release notes
         if: github.ref != 'refs/heads/main'
         env:
           GIT_BRANCH: ${{ github.ref }}
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+          GITHUB_BASE_REF: ${{ github.base_ref	}}
         run: |
-          echo $GIT_BRANCH
+          printf "GIT_BRANCH: $GIT_BRANCH \n"
+          printf "GITHUB_HEAD_REF: $GITHUB_HEAD_REF \n"
+          printf "GITHUB_BASE_REF: $GITHUB_BASE_REF \n"
+          printf "list git branches: \n"
+          git branch --list --all
+
           if [[ "$GIT_BRANCH" == "refs/heads/main" ]]
           then
               printf "\n $GIT_BRANCH branch, ignoring check for relese notes \n"
@@ -36,7 +49,7 @@ jobs:
           then
               printf "\n $GIT_BRANCH branch, ignoring check for relese notes \n"
           else
-              ChangedFiles=`git diff --name-only origin/main`
+              ChangedFiles=`git diff --name-only remotes/origin/main`
               echo $ChangedFiles
               case "$ChangedFiles" in
                 *CHANGELOG.*)
@@ -48,7 +61,7 @@ jobs:
 
   run_tests:
     name: run_tests
-    timeout-minutes: 3
+    timeout-minutes: 7
     strategy:
       matrix:
         go-version: [1.16]
@@ -66,7 +79,7 @@ jobs:
       - name: tests and benchmarks
         run: |
           go test -timeout 1m -race -run=XXXX -bench=. ./...
-          go test -timeout 1m -v -race ./...
+          go test -timeout 4m -v -race ./...
 
       - name: test coverage
         run: |
@@ -78,7 +91,7 @@ jobs:
           shasum --algorithm 512 --check <(curl -s "https://raw.githubusercontent.com/codecov/codecov-bash/${VERSION}/SHA512SUM" | grep codecov)
           rm -rf codecov
 
-          go test -timeout 2m -v -race -cover -coverprofile=coverage.out ./... && bash <(curl -s https://codecov.io/bash)
+          go test -timeout 4m -v -race -cover -coverprofile=coverage.out ./... && bash <(curl -s https://codecov.io/bash)
           go tool cover -html=coverage.out -o coverage.html
           go tool cover -func=coverage.out
 
@@ -91,7 +104,7 @@ jobs:
 
   run_analysis:
     name: run_analysis
-    timeout-minutes: 3
+    timeout-minutes: 5
     strategy:
       matrix:
         go-version: [1.16]
@@ -154,7 +167,7 @@ jobs:
           find . -name "*.go" | xargs -n 1 sed -i.backup 's/sync.Mutex/deadlock.Mutex/'
           find . -name '*.backup' -delete
           /home/runner/go/bin/goimports -w .
-          go test -timeout 1m -v -race ./...
+          go test -timeout 4m -v -race ./...
           go mod tidy
 
           # error shadowing

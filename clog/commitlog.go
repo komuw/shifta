@@ -79,9 +79,9 @@ type Clog struct {
 // New creates a commitLog.
 //
 // The commitlog will be created in the filesystem at path.
-// Each segment will hold upto maxSegBytes of content.
-// Once a segment gets larger than maxLogBytes, it gets deleted from the filesystem.
-// Likewise, once a segment gets older than maxLogAge, it gets deleted from the filesystem.
+// Each segment will hold upto maxSegBytes of content, the value of maxSegBytes should be significantly smaller than RAM.
+// Once a commitlog gets larger than maxLogBytes, some segments gets deleted from the filesystem.
+// Likewise, once a commitlog gets older than maxLogAge, some segments gets deleted from the filesystem.
 // When creating a commitlog, you should choose values of maxSegBytes, maxLogBytes & maxLogAge
 // that are appropriate for your usecase.
 // For comparison purposes, the Kafka default values for maxLogBytes & maxLogAge is 1GB and 7days respectively.
@@ -91,6 +91,13 @@ type Clog struct {
 //   errA := l.Append([]byte("order # 1"))
 //
 func New(path string, maxSegBytes uint64, maxLogBytes uint64, maxLogAge time.Duration) (*Clog, error) {
+	// maxSegBytes is a property of segment.
+	//   It is size in bytes each segment can be, before been considered full & a new one created in its place.
+	// maxLogBytes is a property of clog.
+	//   It is size in bytes the log can allowed to be; once reached, some segments are deleted.
+	// maxLogAge is a property of clog.
+	//   It is age in seconds a log can be; once reached, some older segments are deleted.
+	//
 	c, err := newCleaner(maxLogBytes, maxLogAge)
 	if err != nil {
 		return nil, err
@@ -204,7 +211,7 @@ func (l *Clog) activeSegment() (*segment, error) {
 	return l.segmentRead()[_len-1], nil
 }
 
-// Path returns the directory, in the filesystem, of the commitlog
+// Path returns the directory, in the filesystem, of the commitlog.
 func (l *Clog) Path() string {
 	return l.path
 }
@@ -299,28 +306,51 @@ func (l *Clog) Clean() error {
 	return nil
 }
 
-// Read reads data from the commitlog starting at offset(exclusive)
+const internalMaxToRead = (64 * 1000 * 1000) // 64Mb
+
+// Read reads upto maxToRead bytes from the commitlog starting at offset(exclusive).
+// maxToRead is a hint, this method can read more or less than that.
+// If maxToRead == 0 then a default value will be chosen.
 //
 // If it encounters an error, it will still return all the data read so far,
 // its offset and an error.
-func (l *Clog) Read(offset uint64) (dataRead [][]byte, lastReadOffset uint64, err error) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
+func (l *Clog) Read(offset uint64, maxToRead uint64) (dataRead []byte, lastReadOffset uint64, err error) {
+	l.mu.RLock()
+	defer l.mu.RUnlock()
 
+	var max int = int(maxToRead)
+	if max <= 0 {
+		max = internalMaxToRead
+	} else if max > (internalMaxToRead * 10) {
+		// prevent a case where a malicious actor sends
+		// a maxToRead that is >>> computer RAM leading to OOM.
+		max = internalMaxToRead * 10
+	}
+
+	var sizeReadSofar int
 	for _, seg := range l.segments {
 		if seg.baseOffset > offset {
 			// We exclude the offset from reads.
 			// This allows people to use lastReadOffset in subsequent calls to l.Read
-			b, err := seg.Read()
-			if err != nil {
+			b, errR := seg.Read()
+			if errR != nil {
 				// TODO: should we return based on one error?
-				return dataRead, lastReadOffset, err
+				return dataRead, lastReadOffset, errR
 				// TODO: test that if error occurs, we still return whatever has been read so far.
 			}
-			dataRead = append(dataRead, b)
+			dataRead = append(dataRead, b...)
 			lastReadOffset = seg.baseOffset
+			sizeReadSofar = sizeReadSofar + len(b)
+
+			if sizeReadSofar >= max {
+				break
+			}
 		}
 	}
 
+	// clog reads the whole data from a segment, even if the individual segment
+	// has data greater than maxToRead.
+	// Thus, the returned lastReadOffset is safe to be used in subsequent l.Read calls
+	// since the segment it belongs to wont be read again.
 	return dataRead, lastReadOffset, nil
 }

@@ -81,7 +81,7 @@ func (s *segment) String() string {
 	return fmt.Sprintf("segment{file: %s, baseOffset:%d}", s.filePath, s.baseOffset)
 }
 
-// IsFull shows whether the segment holds as much data as it is allowed to
+// IsFull shows whether the segment holds as much data as it is allowed to.
 func (s *segment) IsFull() bool {
 	s.mu.RLock()
 	r := s.currentSegBytes >= s.maxSegBytes
@@ -178,8 +178,8 @@ func (s *segment) close() error {
 
 // Read reads all data from the segment.
 func (s *segment) Read() ([]byte, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
 	// TODO: we should not read the whole file to memory.
 	b, err := os.ReadFile(s.f.Name())

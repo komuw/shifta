@@ -624,7 +624,7 @@ func TestLogRead(t *testing.T) {
 			t.Fatal("\n\t", errA)
 		}
 
-		blob, lastReadOffset, errB := l.Read(0)
+		blob, lastReadOffset, errB := l.Read(0, 0)
 		if errB != nil {
 			t.Fatal("\n\t", errB)
 		}
@@ -634,8 +634,8 @@ func TestLogRead(t *testing.T) {
 		if lastReadOffset != l.segments[0].baseOffset {
 			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", lastReadOffset, l.segments[0].baseOffset)
 		}
-		if string(blob[0]) != oneMsg {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", string(blob[0]), oneMsg)
+		if string(blob) != oneMsg {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", string(blob), oneMsg)
 		}
 	})
 
@@ -658,21 +658,21 @@ func TestLogRead(t *testing.T) {
 			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(l.segments), 23)
 		}
 
-		blob, lastReadOffset, errB := l.Read(0)
+		blob, lastReadOffset, errB := l.Read(0, 0)
 		if errB != nil {
 			t.Fatal("\n\t", errB)
 		}
 		if lastReadOffset != l.segments[22].baseOffset {
 			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", lastReadOffset, l.segments[22].baseOffset)
 		}
-		if len(blob) != 23 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), 23)
+		if len(blob) != 16100 {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), 16100)
 		}
 		if !cmp.Equal(blob[0], blob[22]) {
 			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", string(blob[0]), string(blob[22]))
 		}
-		if !cmp.Equal(blob[0], msg) {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", string(blob[0]), msg)
+		if !cmp.Equal(blob[0], msg[0]) {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", blob[0], msg[0])
 		}
 	})
 
@@ -696,24 +696,24 @@ func TestLogRead(t *testing.T) {
 		}
 
 		offset := l.segments[13].baseOffset + 3 // start from a number greater than the 13th segment's offset.
-		blob, lastReadOffset, errB := l.Read(offset)
+		blob, lastReadOffset, errB := l.Read(offset, 0)
 		if errB != nil {
 			t.Fatal("\n\t", errB)
 		}
 		if lastReadOffset != l.segments[22].baseOffset {
 			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", lastReadOffset, l.segments[22].baseOffset)
 		}
-		if len(blob) != 9 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), 9)
+		if len(blob) != 6300 {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), 6300)
 		}
 		if !cmp.Equal(blob[0], blob[8]) {
 			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", string(blob[0]), string(blob[8]))
 		}
-		if !cmp.Equal(blob[0], msg) {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", string(blob[0]), msg)
+		if !cmp.Equal(blob[0], msg[0]) {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", blob[0], msg[0])
 		}
 
-		b, lo, errC := l.Read(lastReadOffset)
+		b, lo, errC := l.Read(lastReadOffset, 0)
 		if errC != nil {
 			t.Fatal("\n\t", errC)
 		}
@@ -722,6 +722,84 @@ func TestLogRead(t *testing.T) {
 		}
 		if lo != 0 {
 			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", lo, 0)
+		}
+	})
+
+	t.Run("read from a commitlog with data larger than maxToRead", func(t *testing.T) {
+		t.Parallel()
+
+		l, removePath := createClogForTests(t)
+		defer removePath()
+
+		targetMemBytes := internalMaxToRead * 4
+		numSegs := 8
+		memPerSeg := targetMemBytes / numSegs
+
+		msg := []byte(strings.Repeat("a", memPerSeg))
+		for i := 0; i <= numSegs; i++ {
+			errA := l.Append(msg)
+			if errA != nil {
+				t.Fatal("\n\t", errA)
+			}
+		}
+
+		// try and read the 4*maxToRead worth of data.
+		blob, _, errB := l.Read(0, 0)
+		if errB != nil {
+			t.Fatal("\n\t", errB)
+		}
+		if len(blob) < internalMaxToRead {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), internalMaxToRead)
+		}
+		if len(blob) > internalMaxToRead*2 {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), internalMaxToRead)
+		}
+	})
+
+	t.Run("read from a commitlog where each segment is larger than the maxToRead const in l.Read", func(t *testing.T) {
+		t.Parallel()
+
+		l, removePath := createClogForTests(t)
+		defer removePath()
+
+		msg := []byte(strings.Repeat("a", internalMaxToRead*2))
+		for i := 0; i < 4; i++ {
+			errA := l.Append(msg)
+			if errA != nil {
+				t.Fatal("\n\t", errA)
+			}
+		}
+
+		blob, _, errB := l.Read(0, 0)
+		if errB != nil {
+			t.Fatal("\n\t", errB)
+		}
+		if len(blob) != internalMaxToRead*2 {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), internalMaxToRead*3)
+		}
+	})
+
+	t.Run("can use a custom maxToRead", func(t *testing.T) {
+		t.Parallel()
+
+		l, removePath := createClogForTests(t)
+		defer removePath()
+
+		maxToRead := internalMaxToRead * 3
+		msg := []byte(strings.Repeat("a", maxToRead*2))
+		for i := 0; i < 4; i++ {
+			errA := l.Append(msg)
+			if errA != nil {
+				t.Fatal("\n\t", errA)
+			}
+		}
+
+		blob, _, errB := l.Read(0, uint64(maxToRead))
+		if errB != nil {
+			t.Fatal("\n\t", errB)
+		}
+		if len(blob) <= internalMaxToRead {
+			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(blob), maxToRead)
 		}
 	})
 }
@@ -761,7 +839,7 @@ func TestCommitLogRaceDetection(t *testing.T) {
 			go func() {
 				defer wg.Done()
 				for j := 0; j < 6; j++ {
-					_, _, errB := l.Read(0)
+					_, _, errB := l.Read(0, 0)
 					if errB != nil {
 						panic(errB)
 					}
@@ -814,7 +892,7 @@ func TestCommitLogRaceDetection(t *testing.T) {
 			go func() {
 				defer wg.Done()
 				for j := 0; j < 6; j++ {
-					_, _, errF := l.Read(3)
+					_, _, errF := l.Read(3, 0)
 					if errF != nil {
 						panic(errF)
 					}
