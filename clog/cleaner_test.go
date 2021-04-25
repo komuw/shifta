@@ -277,12 +277,11 @@ func TestCleanByAge(t *testing.T) {
 
 	t.Run("latest/active segment should be preserved", func(t *testing.T) {
 		t.Parallel()
+		c := qt.New(t)
 
 		maxLogAge := time.Duration(35)
 		cl, errI := newCleaner(1, maxLogAge)
-		if errI != nil {
-			t.Fatal("\n\t", errI)
-		}
+		c.Assert(errI, qt.IsNil)
 
 		segs := []*segment{}
 		totalSegments := 24
@@ -295,18 +294,12 @@ func TestCleanByAge(t *testing.T) {
 			s.baseOffset = uint64(i)
 			segs = append(segs, s)
 		}
-		if len(segs) != totalSegments {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(segs), totalSegments)
-		}
+		c.Assert(segs, qt.HasLen, totalSegments)
 
 		cleanedSegs, errB := cl.cleanByAge(segs)
-		if errB != nil {
-			t.Fatal("\n\t", errB)
-		}
+		c.Assert(errB, qt.IsNil)
 		// cleaning should occur
-		if len(cleanedSegs) != 4 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(cleanedSegs), 4)
-		}
+		c.Assert(cleanedSegs, qt.HasLen, 4)
 
 		if cleanedSegs[0].baseOffset != 20 {
 			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", cleanedSegs[0].baseOffset, 20)
@@ -320,5 +313,11 @@ func TestCleanByAge(t *testing.T) {
 		if cleanedSegs[3].baseOffset != 23 {
 			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", cleanedSegs[3].baseOffset, 23)
 		}
+
+		c.Assert(cleanedSegs[0].baseOffset, qt.Equals, uint64(20))
+		c.Assert(cleanedSegs[1].baseOffset, qt.Equals, uint64(21))
+		c.Assert(cleanedSegs[2].baseOffset, qt.Equals, uint64(22))
+		c.Assert(cleanedSegs[3].baseOffset, qt.Equals, uint64(23))
+
 	})
 }
