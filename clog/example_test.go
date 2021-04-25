@@ -10,7 +10,7 @@ import (
 func ExampleAppend() {
 	l, e := clog.New(
 		"/tmp/customerOrders",
-		10_000_000,    /*10Mb*/
+		80_000_000,    /*80Mb*/
 		1_000_000_000, /*1Gb*/
 		259_200,       /*3days*/
 	)
@@ -30,7 +30,7 @@ func ExampleAppend() {
 func ExampleRead() {
 	l, e := clog.New(
 		"/tmp/customerOrders",
-		10_000_000,    /*10Mb*/
+		80_000_000,    /*80Mb*/
 		1_000_000_000, /*1Gb*/
 		259_200,       /*3days*/
 	)
