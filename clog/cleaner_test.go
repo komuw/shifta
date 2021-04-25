@@ -123,12 +123,11 @@ func TestCleanByBytes(t *testing.T) {
 
 	t.Run("latest/active segment should be preserved", func(t *testing.T) {
 		t.Parallel()
+		c := qt.New(t)
 
 		maxLogBytes := uint64(10)
 		cl, errI := newCleaner(maxLogBytes, 1)
-		if errI != nil {
-			t.Fatal("\n\t", errI)
-		}
+		c.Assert(errI, qt.IsNil)
 
 		segs := []*segment{}
 		totalSegments := 20
@@ -140,32 +139,18 @@ func TestCleanByBytes(t *testing.T) {
 
 			msg := []byte(strings.Repeat("a", 4))
 			err := s.Append(msg)
-			if err != nil {
-				t.Fatal("\n\t", err)
-			}
+			c.Assert(err, qt.IsNil)
 		}
-		if len(segs) != totalSegments {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(segs), totalSegments)
-		}
+		c.Assert(segs, qt.HasLen, totalSegments)
 
 		cleanedSegs, errB := cl.cleanByBytes(segs)
-		if errB != nil {
-			t.Fatal("\n\t", errB)
-		}
+		c.Assert(errB, qt.IsNil)
 		// cleaning SHOULD occur
-		if len(cleanedSegs) != 3 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(cleanedSegs), totalSegments)
-		}
+		c.Assert(cleanedSegs, qt.HasLen, 3)
 
-		if cleanedSegs[0].baseOffset != 17 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", cleanedSegs[0].baseOffset, 17)
-		}
-		if cleanedSegs[1].baseOffset != 18 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", cleanedSegs[1].baseOffset, 18)
-		}
-		if cleanedSegs[2].baseOffset != 19 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", cleanedSegs[2].baseOffset, 19)
-		}
+		c.Assert(cleanedSegs[0].baseOffset, qt.Equals, uint64(17))
+		c.Assert(cleanedSegs[1].baseOffset, qt.Equals, uint64(18))
+		c.Assert(cleanedSegs[2].baseOffset, qt.Equals, uint64(19))
 
 		activeSegment := func(segs []*segment) *segment {
 			// see Clog.activeSegment()
@@ -173,9 +158,7 @@ func TestCleanByBytes(t *testing.T) {
 			return segs[_len-1]
 		}
 		activeSeg := activeSegment(cleanedSegs)
-		if activeSeg.baseOffset != 19 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", activeSeg.baseOffset, 19)
-		}
+		c.Assert(activeSeg.baseOffset, qt.Equals, uint64(19))
 	})
 
 	t.Run("atleast one segment should be preserved", func(t *testing.T) {
