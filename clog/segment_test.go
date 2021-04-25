@@ -53,10 +53,7 @@ func TestNewSegment(t *testing.T) {
 		c.Assert(s.currentSegBytes, qt.Equals, uint64(0))
 		c.Assert(s.maxSegBytes, qt.Equals, uint64(100))
 		c.Assert(s.closed, qt.Equals, false)
-
-		if s.age <= 0 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", s.age, ">0")
-		}
+		c.Assert(s.age > 0, qt.IsTrue)
 	})
 
 	t.Run("with zero baseOffset", func(t *testing.T) {
