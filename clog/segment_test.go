@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	qt "github.com/frankban/quicktest"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -38,11 +39,10 @@ func TestNewSegment(t *testing.T) {
 
 	t.Run("with normal baseOffset", func(t *testing.T) {
 		t.Parallel()
+		c := qt.New(t)
 
 		path, err := ioutil.TempDir("/tmp", "clog")
-		if err != nil {
-			t.Fatal("\n\t", err)
-		}
+		c.Assert(err, qt.IsNil)
 		defer os.RemoveAll(path)
 
 		baseOffset := tNow()
