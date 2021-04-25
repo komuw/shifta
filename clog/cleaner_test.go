@@ -163,12 +163,11 @@ func TestCleanByBytes(t *testing.T) {
 
 	t.Run("atleast one segment should be preserved", func(t *testing.T) {
 		t.Parallel()
+		c := qt.New(t)
 
 		maxLogBytes := uint64(10)
 		cl, errI := newCleaner(maxLogBytes, 1)
-		if errI != nil {
-			t.Fatal("\n\t", errI)
-		}
+		c.Assert(errI, qt.IsNil)
 
 		segs := []*segment{}
 		totalSegments := 20
@@ -181,25 +180,15 @@ func TestCleanByBytes(t *testing.T) {
 			// each segment on its own is greater than maxLogBytes
 			msg := []byte(strings.Repeat("a", int(maxLogBytes*3)))
 			err := s.Append(msg)
-			if err != nil {
-				t.Fatal("\n\t", err)
-			}
+			c.Assert(err, qt.IsNil)
 		}
-		if len(segs) != totalSegments {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(segs), totalSegments)
-		}
+		c.Assert(segs, qt.HasLen, totalSegments)
 
 		cleanedSegs, errB := cl.cleanByBytes(segs)
-		if errB != nil {
-			t.Fatal("\n\t", errB)
-		}
+		c.Assert(errB, qt.IsNil)
 		// one segment should be left AND it should be the latest one
-		if len(cleanedSegs) != 1 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(cleanedSegs), 1)
-		}
-		if cleanedSegs[0].baseOffset != 19 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", cleanedSegs[0].baseOffset, 19)
-		}
+		c.Assert(cleanedSegs, qt.HasLen, 1)
+		c.Assert(cleanedSegs[0].baseOffset, qt.Equals, uint64(19))
 	})
 }
 
