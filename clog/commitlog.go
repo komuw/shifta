@@ -289,10 +289,10 @@ func (l *Clog) split() error {
 	return nil
 }
 
-// Clean deletes segments that are;
+// Clean deletes some segments when the commitlog is;
 // (a) larger than maxLogBytes
+// and/or
 // (b) older than maxLogAge
-// from the commitlog(and filesystem)
 func (l *Clog) Clean() error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
