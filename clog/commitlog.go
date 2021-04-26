@@ -310,6 +310,7 @@ const internalMaxToRead = (64 * 1000 * 1000) // 64Mb
 
 // Read reads upto maxToRead bytes from the commitlog starting at offset(exclusive).
 // maxToRead is a hint, this method can read more or less than that.
+// The value of maxToRead should be significantly smaller than RAM.
 // If maxToRead == 0 then a default value will be chosen.
 //
 // If it encounters an error, it will still return all the data read so far,
