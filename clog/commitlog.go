@@ -335,7 +335,6 @@ func (l *Clog) Read(offset uint64, maxToRead uint64) (dataRead []byte, lastReadO
 			// This allows people to use lastReadOffset in subsequent calls to l.Read
 			b, errR := seg.Read()
 			if errR != nil {
-				// TODO: should we return based on one error?
 				return dataRead, lastReadOffset, errR
 				// TODO: test that if error occurs, we still return whatever has been read so far.
 			}
