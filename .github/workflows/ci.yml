@@ -98,7 +98,7 @@ jobs:
       # - name: check can run
       #   run: |
       #     pwd; ls -lsha
-      #     go build --race -trimpath -o clog $HOME/work/clog/clog/cmd/clog
+      #     go build -race -trimpath -o clog $HOME/work/clog/clog/cmd/clog
       #     ./clog
 
 
@@ -226,5 +226,5 @@ jobs:
           for i in {1..13}
           do
             printf "running acceptance number $i\n"
-            go run --race .
+            go run -race .
           done
