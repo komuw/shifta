@@ -293,10 +293,10 @@ func (l *Clog) split() error {
 	return nil
 }
 
-// Clean deletes segments that are;
+// Clean deletes some segments when the commitlog is;
 // (a) larger than maxLogBytes
+// and/or
 // (b) older than maxLogAge
-// from the commitlog(and filesystem)
 func (l *Clog) Clean() error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
@@ -314,6 +314,7 @@ const internalMaxToRead = (64 * 1000 * 1000) // 64Mb
 
 // Read reads upto maxToRead bytes from the commitlog starting at offset(exclusive).
 // maxToRead is a hint, this method can read more or less than that.
+// The value of maxToRead should be significantly smaller than RAM.
 // If maxToRead == 0 then a default value will be chosen.
 //
 // If it encounters an error, it will still return all the data read so far,
@@ -338,7 +339,6 @@ func (l *Clog) Read(offset uint64, maxToRead uint64) (dataRead []byte, lastReadO
 			// This allows people to use lastReadOffset in subsequent calls to l.Read
 			b, errR := seg.Read()
 			if errR != nil {
-				// TODO: should we return based on one error?
 				return dataRead, lastReadOffset, errR
 				// TODO: test that if error occurs, we still return whatever has been read so far.
 			}
