@@ -4,6 +4,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/komuw/shifta/clog"
 )
@@ -11,7 +12,7 @@ import (
 func main() {
 	wg := sync.WaitGroup{}
 
-	l, e := clog.New("/tmp/clog/orders", 100, 5, 7)
+	l, e := clog.New("/tmp/clog/orders", 100, 5, time.Second*7)
 	if e != nil {
 		panic(e)
 	}
