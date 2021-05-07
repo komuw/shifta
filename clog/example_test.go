@@ -3,6 +3,7 @@ package clog_test
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/komuw/shifta/clog"
 )
@@ -10,9 +11,9 @@ import (
 func ExampleAppend() {
 	l, e := clog.New(
 		"/tmp/customerOrders",
-		80_000_000,    /*80Mb*/
-		1_000_000_000, /*1Gb*/
-		259_200,       /*3days*/
+		80_000_000,     /*80Mb*/
+		1_000_000_000,  /*1Gb*/
+		3*24*time.Hour, /*3days*/
 	)
 	if e != nil {
 		panic(e)
@@ -30,9 +31,9 @@ func ExampleAppend() {
 func ExampleRead() {
 	l, e := clog.New(
 		"/tmp/customerOrders",
-		80_000_000,    /*80Mb*/
-		1_000_000_000, /*1Gb*/
-		259_200,       /*3days*/
+		80_000_000,     /*80Mb*/
+		1_000_000_000,  /*1Gb*/
+		3*24*time.Hour, /*3days*/
 	)
 	if e != nil {
 		panic(e)

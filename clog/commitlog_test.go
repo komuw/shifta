@@ -34,7 +34,7 @@ func createClogForTests(t *testing.T, conf ...createLogConfig) (*Clog, func()) {
 
 	maxSegBytes := uint64(100)
 	maxLogBytes := uint64(1)
-	maxLogAge := time.Duration(1)
+	maxLogAge := 1 * time.Nanosecond
 	if conf != nil {
 		maxSegBytes = conf[0].maxSegBytes
 		maxLogBytes = conf[0].maxLogBytes
@@ -502,7 +502,7 @@ func TestLogSplit(t *testing.T) {
 		maxSegmentBytes := uint64(78)
 		path, removePath := createPathForTests(t)
 		defer removePath()
-		l, e := New(path, maxSegmentBytes, 1, 1)
+		l, e := New(path, maxSegmentBytes, 1, 1*time.Nanosecond)
 		if e != nil {
 			t.Fatal("\n\t", e)
 		}

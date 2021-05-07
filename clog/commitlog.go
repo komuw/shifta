@@ -86,7 +86,7 @@ type Clog struct {
 // For comparison purposes, the Kafka default values for maxLogBytes & maxLogAge is 1GB and 7days respectively.
 //
 // usage:
-//   l, errN := New("/tmp/orders", 100, 5, 7)
+//   l, errN := New("/tmp/orders", 100, 5, time.Hour*3 )
 //   errA := l.Append([]byte("order # 1"))
 //
 func New(path string, maxSegBytes uint64, maxLogBytes uint64, maxLogAge time.Duration) (*Clog, error) {
