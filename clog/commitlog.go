@@ -34,11 +34,10 @@ import (
 const (
 	lFileSuffix = ".log"
 	// owner can read, write, & execute
-        // group can only read
-        // others have no permissions
+	// group can only read
+	// others have no permissions
 	ownerReadableWritable fs.FileMode = 0o740
 )
-
 
 var (
 	errNoActiveSegment   = errors.New("commitLog has no active segment")
