@@ -137,6 +137,7 @@ jobs:
           go install golang.org/x/tools/cmd/goimports@latest
           go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow@latest
           go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+          pip3 install -U semgrep
 
           /home/runner/go/bin/staticcheck -version
         env:
@@ -154,11 +155,25 @@ jobs:
           /home/runner/go/bin/httperroryzer ./...
           # /home/runner/go/bin/golangci-lint run --no-config --enable=bodyclose,exhaustive,exportloopref,gochecknoglobals,tparallel,unparam,wrapcheck ./...
 
+          # run dgryski semgrep_go
+          rm -rf /tmp/dgryski
           mkdir -p /tmp/dgryski/semgrep-go
-          wget -nc --output-document=/tmp/dgryski/semgrep-go/rules.go https://raw.githubusercontent.com/dgryski/semgrep-go/master/ruleguard.rules.go
+          wget -nc --output-document=/tmp/dgryski/semgrep_go.zip https://github.com/dgryski/semgrep-go/archive/refs/heads/master.zip
+          unzip /tmp/dgryski/semgrep_go.zip -d /tmp/dgryski/
+          mv /tmp/dgryski/semgrep-go-master /tmp/dgryski/semgrep_go
           go get github.com/quasilyte/go-ruleguard/dsl
-          /home/runner/go/bin/ruleguard -c 1 -rules /tmp/dgryski/semgrep-go/rules.go ./...
+          /home/runner/go/bin/ruleguard -c 1 -rules /tmp/dgryski/semgrep_go/ruleguard.rules.go ./...
           go mod tidy
+          semgrep -v -f /tmp/dgryski/semgrep_go
+
+          # run trailofbits semgrep_go
+          # https://www.trailofbits.com/post/discovering-goroutine-leaks-with-semgrep
+          rm -rf /tmp/trailofbits/
+          mkdir -p /tmp/trailofbits/semgrep-rules
+          wget -nc --output-document=/tmp/trailofbits/semgrep_rules.zip https://github.com/trailofbits/semgrep-rules/archive/refs/heads/main.zip
+          unzip /tmp/trailofbits/semgrep_rules.zip -d /tmp/trailofbits/
+          mv /tmp/trailofbits/semgrep-rules-main /tmp/trailofbits/semgrep_rules
+          semgrep -v -f /tmp/trailofbits/semgrep_rules/go/
 
           # deadlock detection
           # https://github.com/cockroachdb/cockroach/issues/7972
