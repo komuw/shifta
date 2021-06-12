@@ -8,7 +8,7 @@ import (
 	"github.com/komuw/shifta/clog"
 )
 
-func ExampleAppend() {
+func ExampleClog_Append() {
 	l, e := clog.New(
 		"/tmp/customerOrders",
 		80_000_000,     /*80Mb*/
@@ -28,7 +28,7 @@ func ExampleAppend() {
 	// Unordered output:
 }
 
-func ExampleRead() {
+func ExampleClog_Read() {
 	l, e := clog.New(
 		"/tmp/customerOrders",
 		80_000_000,     /*80Mb*/

@@ -98,7 +98,7 @@ jobs:
       # - name: check can run
       #   run: |
       #     pwd; ls -lsha
-      #     go build --race -trimpath -o clog $HOME/work/clog/clog/cmd/clog
+      #     go build -race -trimpath -o clog $HOME/work/clog/clog/cmd/clog
       #     ./clog
 
 
@@ -168,11 +168,12 @@ jobs:
 
           # run trailofbits semgrep_go
           # https://www.trailofbits.com/post/discovering-goroutine-leaks-with-semgrep
+          # license: https://github.com/trailofbits/semgrep-rules/blob/931bd987cb4e8bd788a0ed6671f18207cf328770/LICENSE
           rm -rf /tmp/trailofbits/
           mkdir -p /tmp/trailofbits/semgrep-rules
-          wget -nc --output-document=/tmp/trailofbits/semgrep_rules.zip https://github.com/trailofbits/semgrep-rules/archive/refs/heads/main.zip
+          wget -nc --output-document=/tmp/trailofbits/semgrep_rules.zip https://github.com/trailofbits/semgrep-rules/archive/931bd987cb4e8bd788a0ed6671f18207cf328770.zip
           unzip /tmp/trailofbits/semgrep_rules.zip -d /tmp/trailofbits/
-          mv /tmp/trailofbits/semgrep-rules-main /tmp/trailofbits/semgrep_rules
+          mv /tmp/trailofbits/semgrep-rules-931bd987cb4e8bd788a0ed6671f18207cf328770 /tmp/trailofbits/semgrep_rules
           semgrep -v -f /tmp/trailofbits/semgrep_rules/go/
 
           # deadlock detection
@@ -241,5 +242,5 @@ jobs:
           for i in {1..13}
           do
             printf "running acceptance number $i\n"
-            go run --race .
+            go run -race .
           done

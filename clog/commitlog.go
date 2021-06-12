@@ -58,6 +58,10 @@ func tNow() uint64 {
 //
 // To create a commitlog, use the New method.
 type Clog struct {
+	// For concurrency purposes; it's only the public API methods that should
+	// call Clog.mu
+	// The private ones should not.
+
 	path        string
 	initialized bool
 
