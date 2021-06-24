@@ -4,6 +4,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	qt "github.com/frankban/quicktest"
 )
 
 func TestCleaner(t *testing.T) {
@@ -11,28 +13,24 @@ func TestCleaner(t *testing.T) {
 
 	t.Run("less bytes errors", func(t *testing.T) {
 		t.Parallel()
+		c := qt.New(t)
+
 		_, errA := newCleaner(0, 1)
-		if errA == nil {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", errA, "nonNilError")
-		}
+		c.Assert(errA, qt.ErrorMatches, errBadCleaner.Error())
 
 		_, errB := newCleaner(uint64(0), 1)
-		if errB == nil {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", errB, "nonNilError")
-		}
+		c.Assert(errB, qt.ErrorMatches, errBadCleaner.Error())
 	})
 
 	t.Run("less Age errors", func(t *testing.T) {
 		t.Parallel()
+		c := qt.New(t)
+
 		_, errA := newCleaner(1, 0)
-		if errA == nil {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", errA, "nonNilError")
-		}
+		c.Assert(errA, qt.ErrorMatches, errBadCleaner.Error())
 
 		_, errB := newCleaner(1, -78)
-		if errB == nil {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", errB, "nonNilError")
-		}
+		c.Assert(errB, qt.ErrorMatches, errBadCleaner.Error())
 	})
 }
 
@@ -41,12 +39,11 @@ func TestCleanByBytes(t *testing.T) {
 
 	t.Run("total log size is equal to cleaner.maxLogBytes", func(t *testing.T) {
 		t.Parallel()
+		c := qt.New(t)
 
 		maxLogBytes := uint64(10)
 		cl, errI := newCleaner(maxLogBytes, 1)
-		if errI != nil {
-			t.Fatal("\n\t", errI)
-		}
+		c.Assert(errI, qt.IsNil)
 
 		segs := []*segment{}
 		totalSegments := 10
@@ -59,32 +56,24 @@ func TestCleanByBytes(t *testing.T) {
 			// so size of all segments == maxLogBytes
 			msg := []byte("a")
 			err := s.Append(msg)
-			if err != nil {
-				t.Fatal("\n\t", err)
-			}
+			c.Assert(err, qt.IsNil)
 		}
-		if len(segs) != totalSegments {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(segs), totalSegments)
-		}
+		c.Assert(segs, qt.HasLen, totalSegments)
 
 		cleanedSegs, errB := cl.cleanByBytes(segs)
-		if errB != nil {
-			t.Fatal("\n\t", errB)
-		}
+		c.Assert(errB, qt.IsNil)
+
 		// no cleaning should occur if size of the log == maxLogBytes
-		if len(cleanedSegs) != totalSegments {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(cleanedSegs), totalSegments)
-		}
+		c.Assert(cleanedSegs, qt.HasLen, totalSegments)
 	})
 
 	t.Run("total log size is less than cleaner.maxLogBytes", func(t *testing.T) {
 		t.Parallel()
+		c := qt.New(t)
 
 		maxLogBytes := uint64(10)
 		cl, errI := newCleaner(maxLogBytes, 1)
-		if errI != nil {
-			t.Fatal("\n\t", errI)
-		}
+		c.Assert(errI, qt.IsNil)
 
 		segs := []*segment{}
 		totalSegments := 5
@@ -95,32 +84,23 @@ func TestCleanByBytes(t *testing.T) {
 
 			msg := []byte("a")
 			err := s.Append(msg)
-			if err != nil {
-				t.Fatal("\n\t", err)
-			}
+			c.Assert(err, qt.IsNil)
 		}
-		if len(segs) != totalSegments {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(segs), totalSegments)
-		}
+		c.Assert(segs, qt.HasLen, totalSegments)
 
 		cleanedSegs, errB := cl.cleanByBytes(segs)
-		if errB != nil {
-			t.Fatal("\n\t", errB)
-		}
+		c.Assert(errB, qt.IsNil)
 		// no cleaning should occur
-		if len(cleanedSegs) != totalSegments {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(cleanedSegs), totalSegments)
-		}
+		c.Assert(cleanedSegs, qt.HasLen, totalSegments)
 	})
 
 	t.Run("total log size is greater than cleaner.maxLogBytes", func(t *testing.T) {
 		t.Parallel()
+		c := qt.New(t)
 
 		maxLogBytes := uint64(10)
 		cl, errI := newCleaner(maxLogBytes, 1)
-		if errI != nil {
-			t.Fatal("\n\t", errI)
-		}
+		c.Assert(errI, qt.IsNil)
 
 		segs := []*segment{}
 		totalSegments := 20
@@ -131,32 +111,23 @@ func TestCleanByBytes(t *testing.T) {
 
 			msg := []byte("a")
 			err := s.Append(msg)
-			if err != nil {
-				t.Fatal("\n\t", err)
-			}
+			c.Assert(err, qt.IsNil)
 		}
-		if len(segs) != totalSegments {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(segs), totalSegments)
-		}
+		c.Assert(segs, qt.HasLen, totalSegments)
 
 		cleanedSegs, errB := cl.cleanByBytes(segs)
-		if errB != nil {
-			t.Fatal("\n\t", errB)
-		}
+		c.Assert(errB, qt.IsNil)
 		// cleaning SHOULD occur
-		if len(cleanedSegs) != totalSegments/2 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(cleanedSegs), totalSegments/2)
-		}
+		c.Assert(cleanedSegs, qt.HasLen, totalSegments/2)
 	})
 
 	t.Run("latest/active segment should be preserved", func(t *testing.T) {
 		t.Parallel()
+		c := qt.New(t)
 
 		maxLogBytes := uint64(10)
 		cl, errI := newCleaner(maxLogBytes, 1)
-		if errI != nil {
-			t.Fatal("\n\t", errI)
-		}
+		c.Assert(errI, qt.IsNil)
 
 		segs := []*segment{}
 		totalSegments := 20
@@ -168,32 +139,18 @@ func TestCleanByBytes(t *testing.T) {
 
 			msg := []byte(strings.Repeat("a", 4))
 			err := s.Append(msg)
-			if err != nil {
-				t.Fatal("\n\t", err)
-			}
+			c.Assert(err, qt.IsNil)
 		}
-		if len(segs) != totalSegments {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(segs), totalSegments)
-		}
+		c.Assert(segs, qt.HasLen, totalSegments)
 
 		cleanedSegs, errB := cl.cleanByBytes(segs)
-		if errB != nil {
-			t.Fatal("\n\t", errB)
-		}
+		c.Assert(errB, qt.IsNil)
 		// cleaning SHOULD occur
-		if len(cleanedSegs) != 3 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(cleanedSegs), totalSegments)
-		}
+		c.Assert(cleanedSegs, qt.HasLen, 3)
 
-		if cleanedSegs[0].baseOffset != 17 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", cleanedSegs[0].baseOffset, 17)
-		}
-		if cleanedSegs[1].baseOffset != 18 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", cleanedSegs[1].baseOffset, 18)
-		}
-		if cleanedSegs[2].baseOffset != 19 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", cleanedSegs[2].baseOffset, 19)
-		}
+		c.Assert(cleanedSegs[0].baseOffset, qt.Equals, uint64(17))
+		c.Assert(cleanedSegs[1].baseOffset, qt.Equals, uint64(18))
+		c.Assert(cleanedSegs[2].baseOffset, qt.Equals, uint64(19))
 
 		activeSegment := func(segs []*segment) *segment {
 			// see Clog.activeSegment()
@@ -201,19 +158,16 @@ func TestCleanByBytes(t *testing.T) {
 			return segs[_len-1]
 		}
 		activeSeg := activeSegment(cleanedSegs)
-		if activeSeg.baseOffset != 19 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", activeSeg.baseOffset, 19)
-		}
+		c.Assert(activeSeg.baseOffset, qt.Equals, uint64(19))
 	})
 
 	t.Run("atleast one segment should be preserved", func(t *testing.T) {
 		t.Parallel()
+		c := qt.New(t)
 
 		maxLogBytes := uint64(10)
 		cl, errI := newCleaner(maxLogBytes, 1)
-		if errI != nil {
-			t.Fatal("\n\t", errI)
-		}
+		c.Assert(errI, qt.IsNil)
 
 		segs := []*segment{}
 		totalSegments := 20
@@ -226,25 +180,15 @@ func TestCleanByBytes(t *testing.T) {
 			// each segment on its own is greater than maxLogBytes
 			msg := []byte(strings.Repeat("a", int(maxLogBytes*3)))
 			err := s.Append(msg)
-			if err != nil {
-				t.Fatal("\n\t", err)
-			}
+			c.Assert(err, qt.IsNil)
 		}
-		if len(segs) != totalSegments {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(segs), totalSegments)
-		}
+		c.Assert(segs, qt.HasLen, totalSegments)
 
 		cleanedSegs, errB := cl.cleanByBytes(segs)
-		if errB != nil {
-			t.Fatal("\n\t", errB)
-		}
+		c.Assert(errB, qt.IsNil)
 		// one segment should be left AND it should be the latest one
-		if len(cleanedSegs) != 1 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(cleanedSegs), 1)
-		}
-		if cleanedSegs[0].baseOffset != 19 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", cleanedSegs[0].baseOffset, 19)
-		}
+		c.Assert(cleanedSegs, qt.HasLen, 1)
+		c.Assert(cleanedSegs[0].baseOffset, qt.Equals, uint64(19))
 	})
 }
 
@@ -253,12 +197,11 @@ func TestCleanByAge(t *testing.T) {
 
 	t.Run("total log Age is equal to cleaner.maxLogAge", func(t *testing.T) {
 		t.Parallel()
+		c := qt.New(t)
 
 		maxLogAge := time.Duration(100)
 		cl, errI := newCleaner(1, maxLogAge)
-		if errI != nil {
-			t.Fatal("\n\t", errI)
-		}
+		c.Assert(errI, qt.IsNil)
 
 		segs := []*segment{}
 		totalSegments := 10
@@ -270,30 +213,23 @@ func TestCleanByAge(t *testing.T) {
 			s.age = 10
 			segs = append(segs, s)
 		}
-		if len(segs) != totalSegments {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(segs), totalSegments)
-		}
+		c.Assert(segs, qt.HasLen, totalSegments)
 
 		cleanedSegs, errB := cl.cleanByAge(segs)
-		if errB != nil {
-			t.Fatal("\n\t", errB)
-		}
+		c.Assert(errB, qt.IsNil)
 		// no cleaning should occur if Age of the log == maxLogAge
-		if len(cleanedSegs) != totalSegments {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(cleanedSegs), totalSegments)
-		}
+		c.Assert(cleanedSegs, qt.HasLen, totalSegments)
 	})
 
 	t.Run("total log Age is less than cleaner.maxLogAge", func(t *testing.T) {
 		t.Parallel()
+		c := qt.New(t)
 
 		// fix when https://github.com/dgryski/semgrep-go/issues/29
 		// gets fixed.
 		maxLogAge := time.Duration(10000)
 		cl, errI := newCleaner(1, maxLogAge)
-		if errI != nil {
-			t.Fatal("\n\t", errI)
-		}
+		c.Assert(errI, qt.IsNil)
 
 		segs := []*segment{}
 		totalSegments := 10
@@ -305,28 +241,21 @@ func TestCleanByAge(t *testing.T) {
 			s.age = 10
 			segs = append(segs, s)
 		}
-		if len(segs) != totalSegments {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(segs), totalSegments)
-		}
+		c.Assert(segs, qt.HasLen, totalSegments)
 
 		cleanedSegs, errB := cl.cleanByAge(segs)
-		if errB != nil {
-			t.Fatal("\n\t", errB)
-		}
+		c.Assert(errB, qt.IsNil)
 		// no cleaning should occur
-		if len(cleanedSegs) != totalSegments {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(cleanedSegs), totalSegments)
-		}
+		c.Assert(cleanedSegs, qt.HasLen, totalSegments)
 	})
 
 	t.Run("total log Age is greater than cleaner.maxLogAge", func(t *testing.T) {
 		t.Parallel()
+		c := qt.New(t)
 
 		maxLogAge := time.Duration(13)
 		cl, errI := newCleaner(1, maxLogAge)
-		if errI != nil {
-			t.Fatal("\n\t", errI)
-		}
+		c.Assert(errI, qt.IsNil)
 
 		segs := []*segment{}
 		totalSegments := 100
@@ -338,28 +267,21 @@ func TestCleanByAge(t *testing.T) {
 			s.age = 10
 			segs = append(segs, s)
 		}
-		if len(segs) != totalSegments {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(segs), totalSegments)
-		}
+		c.Assert(segs, qt.HasLen, totalSegments)
 
 		cleanedSegs, errB := cl.cleanByAge(segs)
-		if errB != nil {
-			t.Fatal("\n\t", errB)
-		}
+		c.Assert(errB, qt.IsNil)
 		// cleaning should occur
-		if len(cleanedSegs) != 2 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(cleanedSegs), 2)
-		}
+		c.Assert(cleanedSegs, qt.HasLen, 2)
 	})
 
 	t.Run("latest/active segment should be preserved", func(t *testing.T) {
 		t.Parallel()
+		c := qt.New(t)
 
 		maxLogAge := time.Duration(35)
 		cl, errI := newCleaner(1, maxLogAge)
-		if errI != nil {
-			t.Fatal("\n\t", errI)
-		}
+		c.Assert(errI, qt.IsNil)
 
 		segs := []*segment{}
 		totalSegments := 24
@@ -372,30 +294,16 @@ func TestCleanByAge(t *testing.T) {
 			s.baseOffset = uint64(i)
 			segs = append(segs, s)
 		}
-		if len(segs) != totalSegments {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(segs), totalSegments)
-		}
+		c.Assert(segs, qt.HasLen, totalSegments)
 
 		cleanedSegs, errB := cl.cleanByAge(segs)
-		if errB != nil {
-			t.Fatal("\n\t", errB)
-		}
+		c.Assert(errB, qt.IsNil)
 		// cleaning should occur
-		if len(cleanedSegs) != 4 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", len(cleanedSegs), 4)
-		}
+		c.Assert(cleanedSegs, qt.HasLen, 4)
 
-		if cleanedSegs[0].baseOffset != 20 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", cleanedSegs[0].baseOffset, 20)
-		}
-		if cleanedSegs[1].baseOffset != 21 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", cleanedSegs[1].baseOffset, 21)
-		}
-		if cleanedSegs[2].baseOffset != 22 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", cleanedSegs[2].baseOffset, 22)
-		}
-		if cleanedSegs[3].baseOffset != 23 {
-			t.Errorf("\ngot \n\t%#+v \nwanted \n\t%#+v", cleanedSegs[3].baseOffset, 23)
-		}
+		c.Assert(cleanedSegs[0].baseOffset, qt.Equals, uint64(20))
+		c.Assert(cleanedSegs[1].baseOffset, qt.Equals, uint64(21))
+		c.Assert(cleanedSegs[2].baseOffset, qt.Equals, uint64(22))
+		c.Assert(cleanedSegs[3].baseOffset, qt.Equals, uint64(23))
 	})
 }
