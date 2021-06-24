@@ -75,10 +75,11 @@ func ValueShifta() int {
 
 	res := 0
 	for i := 0; i < 1_000; i++ {
-		_, err := l.Append([]byte("customer #1 ordered 3 shoes."))
+		m, err := l.Append([]byte("customer #1 ordered 3 shoes."))
 		if err != nil {
 			panic(err)
 		}
+		l = m
 		res = i
 	}
 
